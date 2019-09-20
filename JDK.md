@@ -236,15 +236,15 @@ https://openjdk.java.net/projects/jdk9/
 
 java程序员最目前最常见，使用最多的idea工程结构就是以模块为主，一个project下面都是module
 
-<img src="C:\Users\lin\AppData\Roaming\Typora\typora-user-images\1568947439883.png" alt="1568947439883" style="zoom:100%;" />
+<img src="https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/1568947439883.png" alt="1568947439883" style="zoom:100%;" />
 
 ##### 	2.1.2 mavn/gradle模块化 
 
 使用maven/gradle对项目模块化，这里以alibaba的jvm.sandbox以例
 
-<img src="C:\Users\lin\AppData\Roaming\Typora\typora-user-images\1568947657176.png" alt="1568947657176" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/1568947657176.png" alt="1568947657176" style="zoom: 80%;" />
 
-<img src="C:\Users\lin\AppData\Roaming\Typora\typora-user-images\1568947627882.png" alt="1568947627882" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/1568947627882.png" alt="1568947627882" style="zoom: 80%;" />
 
 项目主pom中的modules
 
@@ -281,23 +281,23 @@ java程序员最目前最常见，使用最多的idea工程结构就是以模块
 - 使用的服务列表
 - 提供的服务的实现列表
 
-![1568964483958](D:\java\codes\jdk13test\imges\1568964483958.png)
+![1568964483958](https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/1568964483958.png)
 
 以下面java9以后的jdk目录为例，9以后不再存在rt.jar，java自己使用模块化重构了java
 
-<img src="D:\java\codes\jdk13test\imges\1568961689020.png" alt="1568961689020" style="zoom: 80%;" />
+<img src="https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/1568961689020.png" alt="1568961689020" style="zoom: 80%;" />
 
 ###### 2.1.3.2 编写模块
 
 那么我们自己如何编写java9以后的模块呢
 
-![1568961753146](D:\java\codes\jdk13test\imges\1568961753146.png)
+![1568961753146](https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/1568961753146.png)
 
 首先module-info.java非常重要且只可以存在sourceroot中也就是src下
 
 编译后如下图
 
-![1568961865479](D:\java\codes\jdk13test\imges\1568961865479.png)
+![1568961865479](https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/1568961865479.png)
 
 modules 的`module-info.java`
 
@@ -690,7 +690,7 @@ module java.base {
 
 - 未命名模块（Unnameed Modules）
 
-  ![1568964423297](C:\Users\lin\AppData\Roaming\Typora\typora-user-images\1568964423297.png)
+  ![1568964423297](https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/1568964423297.png)
 
   （1）一个模块是代码和数据的集合；
 
@@ -875,7 +875,7 @@ G1将堆分区为一组大小相等的堆区域，每个堆区域都是一个连
 
 图9-1 G1垃圾收集器堆布局
 
-![下面是图9-1的描述](D:\java\codes\jdk13test\imges\jsgct_dt_004_grbg_frst_hp.png)
+![下面是图9-1的描述](https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/jsgct_dt_004_grbg_frst_hp.png)
 
 [“图9-1 G1垃圾收集器堆布局”的描述](https://docs.oracle.com/javase/9/gctuning/img_text/jsgct_dt_004_grbg_frst_hp.htm)
 
@@ -897,7 +897,7 @@ G1垃圾收集暂停可以回收整个年轻一代的空间，任何收集的任
 
 图9-2垃圾收集周期概述
 
-![下面是图9-2的描述](D:\java\codes\jdk13test\imges\jsgct_dt_001_grbgcltncyl.png)
+![下面是图9-2的描述](https://raw.githubusercontent.com/451846939/Jdk-new-features/master/imges/jsgct_dt_001_grbgcltncyl.png)
 
 [“图9-2垃圾收集周期概述”的说明](https://docs.oracle.com/javase/9/gctuning/img_text/jsgct_dt_001_grbgcltncyl.htm)
 
