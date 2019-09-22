@@ -1994,9 +1994,43 @@ ZGC堆由一组称为*ZPages*的堆区域*组成*。每个ZPage都与可变数�
 
 > https://openjdk.java.net/jeps/350
 
+什么是CDS
+
+###### 类数据共享
+
+类数据共享（CDS）功能有助于减少多个Java虚拟机（JVM）之间的启动时间和内存占用。
+
+从JDK 12开始，默认的CDS归档与Oracle JDK二进制文件一起预先打包。通过`-Xshare:dump`
+
+- 在Linux和macOS平台上，共享存档存储在 `/lib/[arch]/server/classes.jsa`
+- 在Windows平台上，共享存档存储在 `/bin/server/classes.jsa`
+
+默认情况下，默认CDS存档在运行时启用。指定`-Xshare:off`禁用默认共享存档。请参阅[重新生成共享档案](https://docs.oracle.com/en/java/javase/13/vm/class-data-sharing.html#GUID-0260F857-A70E-4399-A1DF-A5766BE33285)以创建自定义的共享档案。在创建和使用定制的共享归档文件时，对转储时间和运行时使用相同的Java堆大小。
+
+当JVM启动时，共享归档文件将映射到内存，以允许在多个JVM进程之间共享这些类的只读JVM元数据。因为访问共享存档比加载类要快，所以可以减少启动时间。
+
+G1，串行，并行和parallelOldGC垃圾收集器支持类数据共享。共享Java堆对象功能（类数据共享的一部分）在64位非Windows平台上仅支持G1垃圾收集器。
+
+在Java SE中包含CDS的主要动机是减少启动时间。相对于所使用的核心类数量而言，应用程序越小，节省的启动时间比例就越大。
+
+新的JVM实例的占地面积成本已通过两种方式降低：
+
+1. 同一主机上的共享归档的一部分被映射为只读，并在多个JVM进程之间共享。否则，将需要在每个JVM实例中复制此数据，这将增加应用程序的启动时间。
+2. 共享档案包含Java Hotspot VM使用它的形式的类数据。不使用在运行时模块化映像中访问原始类信息所需的内存。这些内存节省使更多应用程序可以在同一系统上同时运行。在Windows应用程序中，由于有更多页面映射到进程的地址空间，因此用各种工具衡量的进程的内存占用量可能会增加。这种增加被保留在运行时模块化映像上的部分所需的减少的内存量（在Windows内部）抵消了。减少占地面积仍然是当务之急。
+
+###### 应用类别-数据共享
+
+为了进一步减少启动时间和占用空间，引入了应用程序类数据共享（AppCDS），它扩展了CDS以包括从应用程序类路径中选择的类。
+
+此功能允许将应用程序类放置在共享驱动器中。公共类元数据在不同的Java进程之间共享。AppCDS允许内置系统类加载器，内置平台类加载器和自定义类加载器加载存档的类。当多个JVM共享同一个存档文件时，可以节省内存，并且可以改善整体系统响应时间。
+
+请参见[应用类数据共享](http://www.oracle.com/pls/topic/lookup?ctx=javase13&id=application_class_data_sharing)在Java开发工具包工具的规格。
+
+> https://docs.oracle.com/en/java/javase/13/docs/specs/man/java.html#application-class-data-sharing
+
 ##### 2.4.1目标
 
-扩展[应用程序类 - 数据共享，](https://openjdk.java.net/jeps/310)以允许在Java应用程序执行结束时动态归档类。归档类将包括默认的基础层CDS存档中不存在的所有已加载的应用程序类和库类。
+扩展[应用程序类 - 数据共享](https://openjdk.java.net/jeps/310)，以允许在Java应用程序执行结束时动态归档类。归档类将包括默认的基础层CDS存档中不存在的所有已加载的应用程序类和库类。
 
 - 提高应用程序类 - 数据共享（[AppCDS](https://openjdk.java.net/jeps/310)）的可用性。消除了用户进行试运行以创建每个应用程序的类列表的需要。
 - `-Xshare:dump`使用类列表由该选项启用的静态归档应继续工作。这包括内置类加载器和用户定义的类加载器的类。
