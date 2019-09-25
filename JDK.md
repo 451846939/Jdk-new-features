@@ -879,7 +879,15 @@ G1将堆分区为一组大小相等的堆区域，每个堆区域都是一个连
 
 [“图9-1 G1垃圾收集器堆布局”的描述](https://docs.oracle.com/javase/9/gctuning/img_text/jsgct_dt_004_grbg_frst_hp.htm)
 
+> The figure consists of a 10-by-10 grid. Most of the grid's cells are gray. Nineteen cells are colored dark blue. These dark blue cells are randomly distributed in the upper six rows of the grid. Two of these dark blue cells contain a red box. A cell two cells wide and one cell high (which appears in the first row) and a cell three cells wide and one cell high (which appears in the sixth row) are colored dark blue and labeled "H." Eight cells are colored light blue and contain a red box. Two of these cells are labeled "S." These light blue cells with a red box are distributed randomly, most of them located in the upper half of the grid.
+>
 > 该图由10×10网格组成。大多数网格的单元格都是灰色的。19个细胞呈深蓝色。这些深蓝色单元随机分布在网格的上六行中。其中两个深蓝色单元格包含一个红色框。细胞两个细胞宽，一个细胞高（出现在第一行），细胞三个细胞宽，一个细胞高（出现在第六行），颜色为深蓝色，标记为“H”。八个单元格为浅蓝色，包含一个红色框。其中两个细胞标记为“S”。这些带有红色框的浅蓝色单元是随机分布的，大多数位于网格的上半部分。
+
+> The young generation contains eden regions (red) and survivor regions (red with "S"). These regions provide the same function as the respective contiguous spaces in other collectors, with the difference that in G1 these regions are typically laid out in a noncontiguous pattern in memory. Old regions (light blue) make up the old generation. Old generation regions may be humongous (light blue with "H") for objects that span multiple regions.
+>
+> An application always allocates into a young generation, that is, eden regions, with the exception of humongous, objects that are directly allocated as belonging to the old generation.
+>
+> G1 garbage collection pauses can reclaim space in the young generation as a whole, and any additional set of old generation regions at any collection pause. During the pause G1 copies objects from this *collection set* to one or more different regions in the heap. The destination region for an object depends on the source region of that object: the entire young generation is copied into either survivor or old regions, and objects from old regions to other, different old regions using aging.
 
 年轻一代包含伊甸园区域（红色）和幸存区域（红色与“S”）。这些区域提供与其他收集器中的相应连续空间相同的功能，不同之处在于G1中这些区域通常以不连续的模式布置在存储器中。旧区（淡蓝色）构成了老一代。对于跨越多个区域的物体，老一代区域可能是巨大的（浅蓝色和“H”）。
 
@@ -891,6 +899,8 @@ G1垃圾收集暂停可以回收整个年轻一代的空间，任何收集的任
 
 ##### 2.2.5 垃圾收集周期
 
+> On a high level, the G1 collector alternates between two phases. The young-only phase contains garbage collections that fill up the currently available memory with objects in the old generation gradually. The space-reclamation phase is where G1 reclaims space in the old generation incrementally, in addition to handling the young generation. Then the cycle restarts with a young-only phase.
+
 在高水平上，G1收集器在两个阶段之间交替。仅年轻阶段包含垃圾收集，逐渐填充当前可用内存和旧代中的对象。空间回收阶段是除了处理年轻一代之外，G1逐步回收老一代的空间。然后循环重新开始，只有一个年轻阶段。
 
 图9-2给出了有关此循环的概述，并提供了可能发生的垃圾收集暂停序列的示例：
@@ -901,9 +911,23 @@ G1垃圾收集暂停可以回收整个年轻一代的空间，任何收集的任
 
 [“图9-2垃圾收集周期概述”的说明](https://docs.oracle.com/javase/9/gctuning/img_text/jsgct_dt_001_grbgcltncyl.htm)
 
+> This figure shows the sequence of G1 phases with the pauses that may occur during these phases. There are filled circles, every circle represents a garbage collection pause: blue circles represent young-only collection pauses, orange ones represent pauses induced by marking, and red circles represent mixed collection pauses. The pauses are threaded on two arrows forming a circle: one each for the pauses occurring during the young-only phase, another one representing the mixed collection phase. The young-only phase starts with a few young-only garbage collections represented by small blue circles. After object occupancy in the old generation reaches the threshold defined by InitiatingHeapOccupancyPercent, the next garbage collection pause will be an initial mark garbage collection pause, shown as larger blue circle. In addition to the same work as in other young-only pauses, it prepares concurrent marking.
+>
+> While concurrent marking is running, other young-only pauses may occur, until the Remark pause (the first large orange circle), where G1 completes marking. Additional young-only garbage collections may occur until the Cleanup pause. After the Cleanup pause, there will be a final young-only garbage collection that finishes the young-only phase. During the space-reclamation phase a sequence of mixed collections will occur, indicated as red filled circles. Typically there are fewer mixed garbage collection pauses than young-only pauses in the young-only phase as G1 strives to make the space reclamations as efficient as possible.
+
 > 该图显示了G1阶段的顺序以及在这些阶段期间可能发生的暂停。有圆圈，每个圆圈代表一个垃圾收集暂停：蓝色圆圈表示仅限年轻人的收集暂停，橙色圆圈表示由标记引起的暂停，红色圆圈表示混合收集暂停。暂停在两个箭头上形成一个圆圈：一个用于在仅年轻阶段期间发生的暂停，另一个用于表示混合收集阶段。这个年轻人阶段的开始是一些由小蓝圈代表的年轻垃圾收集。在旧一代中的对象占用达到由InitiatingHeapOccupancyPercent定义的阈值之后，下一个垃圾收集暂停将是一个初始标记垃圾收集暂停，显示为较大的蓝色圆圈。除了与其他仅限年轻人的停顿相同的工作外，它还准备并行标记。
 >
 > 当并发标记正在运行时，可能会出现其他仅限年轻的暂停，直到备注暂停（第一个大橙色圆圈），其中G1完成标记。在清理暂停之前，可能会发生其他仅限年轻的垃圾收集。在清理暂停之后，将有一个最终的年轻垃圾收集完成仅限年轻的阶段。在空间回收阶段，将发生一系列混合收集，表示为红色圆圈。通常，在年轻阶段，混合垃圾收集暂停的次数少于仅限年轻人的暂停，因为G1努力使空间填海尽可能高效。
+
+> The following list describes the phases, their pauses and the transition between the phases of the G1 garbage collection cycle in detail:
+>
+> 1. Young-only phase: This phase starts with a few young-only collections that promote objects into the old generation. The transition between the young-only phase and the space-reclamation phase starts when the old generation occupancy reaches a certain threshold, the Initiating Heap Occupancy threshold. At this time, G1 schedules an Initial Mark young-only collection instead of a regular young-only collection.
+>    - Initial Mark : This type of collection starts the marking process in addition to performing a regular young-only collection. Concurrent marking determines all currently reachable (live) objects in the old generation regions to be kept for the following space-reclamation phase. While marking hasn’t completely finished, regular young collections may occur. Marking finishes with two special stop-the-world pauses: Remark and Cleanup.
+>    - Remark: This pause finalizes the marking itself, and performs global reference processing and class unloading. Between Remark and Cleanup G1 calculates a summary of the liveness information concurrently, which will be finalized and used in the Cleanup pause to update internal data structures.
+>    - Cleanup: This pause also reclaims completely empty regions, and determines whether a space-reclamation phase will actually follow. If a space-reclamation phase follows, the young-only phase completes with a single young-only collection.
+> 2. Space-reclamation phase: This phase consists of multiple mixed collections that in addition to young generation regions, also evacuate live objects of sets of old generation regions. The space-reclamation phase ends when G1 determines that evacuating more old generation regions wouldn't yield enough free space worth the effort.
+>
+> After space-reclamation, the collection cycle restarts with another young-only phase. As backup, if the application runs out of memory while gathering liveness information, G1 performs an in-place stop-the-world full heap compaction (Full GC) like other collectors.
 
 以下列表详细描述了阶段，它们的暂停以及G1垃圾收集周期阶段之间的转换：
 
